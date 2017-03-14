@@ -16,6 +16,8 @@ const Transport = require('./transport')
   * @param {String} [params.id=uuid.v4()] Unique ID for the request (used to ensure conditions are unique per request)
   * @param {String} [params.expiresAt=30 seconds from now] Expiry of request
   * @param {Object} [params.data=null] Additional data to include in the request
+  * @param {Object} [params.headers=null] Additional headers for private details
+  * @param {Object} [params.unsafeHeaders=null] Additional headers for public details
   *
   * @return {Object} Payment request
   */

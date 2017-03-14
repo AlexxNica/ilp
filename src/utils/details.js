@@ -1,7 +1,10 @@
 'use strict'
 
 const cryptoHelper = require('./crypto')
+const Packet = require('./packet')
 const DATA_DELIMITER = '\n\n'
+const STATUS_LINE_REGEX = /^PSK\/1\.0 (PUBLIC|PRIVATE)$/
+const HEADER_LINE_REGEX = /(.+?): (.+)/
 
 function _createRequest ({
   method,
@@ -34,14 +37,14 @@ function createDetails ({
   data
 }) {
   const privateRequest = _createRequest({
-    method: 'private',
+    method: 'PRIVATE',
     headers,
     data
   })
 
   const encrypted = cryptoHelper.aesEncryptBuffer(privateRequest, secret)
   const publicRequest = _createRequest({
-    method: 'public',
+    method: 'PUBLIC',
     headers: unsafeHeaders,
     data: encrypted
   })
@@ -59,14 +62,14 @@ function _parseRequest (request) {
     throw new Error('invalid request: "' + request.toString('utf8') + '"')
   }
 
-  const [ , method ] = statusLine.match(/^PSK\/1\.0 (PUBLIC|PRIVATE)$/) || []
+  const [ , method ] = statusLine.match(STATUS_LINE_REGEX) || []
   if (!method) throw new Error('invalid status line: "' + statusLine + '"')
 
-  const headers = headerLines.reduce((m, header) => {
-    const [ , name, value ] = header.match(/(.+?): (.+)/) || []
+  const headers = headerLines.reduce((aggregator, header) => {
+    const [ , name, value ] = header.match(HEADER_LINE_REGEX) || []
     if (!name || !value) throw new Error('invalid header line: "' + header + '"')
-    m[name] = value
-    return m
+    aggregator[name] = value
+    return aggregator
   }, {})
 
   return {
@@ -92,9 +95,24 @@ function parseDetails ({
   }
 }
 
+function parsePacketAndDetails ({
+  packet,
+  secret
+}) {
+  const { account, amount, data } = Packet.parse(packet)
+  return Object.assign(parseDetails({
+    details: data,
+    secret
+  }), {
+    account,
+    amount
+  })
+}
+
 module.exports = {
   _createRequest,
   _parseRequest,
   createDetails,
-  parseDetails
+  parseDetails,
+  parsePacketAndDetails
 }

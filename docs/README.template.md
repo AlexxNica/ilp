@@ -5,7 +5,7 @@
 </h1>
 
 <h4 align="center">
-A low-level JS <a href="https://interledger.org">Interledger</a> library
+The Javascript client library for <a href="https://interledger.org">Interledger</a>
 </h4>
 
 <br>
@@ -23,8 +23,6 @@ A low-level JS <a href="https://interledger.org">Interledger</a> library
 [snyk-image]: https://snyk.io/test/npm/ilp/badge.svg
 [snyk-url]: https://snyk.io/test/npm/ilp
 
-This module bundles low-level and high-level interfaces to ILP, largely intended for building ILP into other [Application layer](https://github.com/interledger/rfcs/tree/master/0001-interledger-architecture) protocols.
-
 #### The ILP module includes:
 
 * [Interledger Payment Request (IPR)](#interledger-payment-request-ipr-transport-protocol) Transport Protocol, an interactive protocol in which the receiver specifies the payment details, including the condition
@@ -38,7 +36,7 @@ This module bundles low-level and high-level interfaces to ILP, largely intended
 
 *Note that [ledger plugins](https://www.npmjs.com/search?q=ilp-plugin) must be installed alongside this module*
 
-## Simple Payment Setup Protocol (SPSP)
+## [Simple Payment Setup Protocol (SPSP)](https://github.com/interledger/rfcs/blob/master/0009-simple-payment-setup-protocol/0009-simple-payment-setup-protocol.md)
 
 If you are sending to an SPSP receiver with a `user@example.com` identifier, the SPSP module
 provides a high-level interface:

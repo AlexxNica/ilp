@@ -37,11 +37,6 @@ function hmacJsonForPskCondition (obj, sharedSecret) {
   return hmacDigest
 }
 
-// turn object into encrypted buffer
-function aesEncryptObject (obj, sharedSecret) {
-  return aesEncryptBuffer(Buffer.from(JSON.stringify(obj), 'utf8'))
-}
-
 // turn buffer into encrypted buffer
 function aesEncryptBuffer (buffer, sharedSecret) {
   const pskEncryptionKey = hmac(sharedSecret, PSK_ENCRYPTION_STRING)
@@ -64,21 +59,8 @@ function aesDecryptBuffer (encrypted, sharedSecret) {
   ])
 }
 
-// turn base64-encoded encrypted text into parsed object
-function aesDecryptObject (encrypted, sharedSecret) {
-  const decoded = aesDecryptBuffer(Buffer.from(encrypted, 'base64'))
-
-  try {
-    return JSON.parse(decoded.toString('utf8'))
-  } catch (e) {
-    throw new Error('Corrupted ciphertext: ' + e.message)
-  }
-}
-
 module.exports = {
   hmacJsonForPskCondition,
-  aesEncryptObject,
-  aesDecryptObject,
   aesEncryptBuffer,
   aesDecryptBuffer,
   getPskToken,

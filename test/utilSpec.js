@@ -2,18 +2,12 @@
 
 const chai = require('chai')
 const assert = chai.assert
-const Crypto = require('../src/utils/crypto')
+const base64url = require('../src/utils/base64url')
+const Packet = require('../src/utils/packet')
 const Details = require('../src/utils/details')
 const Utils = require('../src/utils')
 
 describe('Utils', function () {
-  describe('cryptoHelper', function () {
-    it('should not decrypt corrupted ciphertext', function () {
-      assert
-        .throws(() => Crypto.aesDecryptObject('garbage', Buffer.from('trash', 'base64')))
-    })
-  })
-
   describe('details', function ()  {
     it('should not parse an invalid request', function () {
       assert.throws(() => Details._parseRequest(Buffer.from('garbage', 'utf8')),
@@ -38,6 +32,43 @@ binary data goes here
       `
       assert.throws(() => Details._parseRequest(Buffer.from(request, 'utf8')),
         /invalid header line:/)
+    })
+
+    it('should parse a request', function () {
+      const request = `PSK/1.0 PRIVATE
+Header: value
+
+binary data goes here`
+
+      assert.deepEqual(
+        Details._parseRequest(Buffer.from(request, 'utf8')),
+        { method: 'PRIVATE',
+          headers: { Header: 'value' },
+          data: Buffer.from('binary data goes here', 'utf8')
+        })
+    })
+
+    it('should parse an ILP packet with PSK details inside', function () {
+      const secret = Buffer.from('secret', 'utf8')
+      const packet = Packet.serialize({
+        account: 'test.alice',
+        amount: '1',
+        data: base64url(Details.createDetails({
+          headers: { header: 'value' },
+          unsafeHeaders: { unsafeHeader: 'value' },
+          data: Buffer.from('binary data', 'utf8'),
+          secret
+        }))
+      })
+
+      assert.deepEqual(
+        Details.parsePacketAndDetails({ packet, secret }),
+        { unsafeHeaders: { unsafeHeader: 'value' },
+          headers: { header: 'value' },
+          data: Buffer.from('binary data', 'utf8'),
+          account: 'test.alice',
+          amount: '1'
+        })
     })
   })
 })

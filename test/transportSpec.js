@@ -13,6 +13,7 @@ const Transport = require('../src/lib/transport')
 const Packet = require('../src/utils/packet')
 const MockPlugin = require('./mocks/mockPlugin')
 const { wait } = require('../src/utils')
+const { parsePacketAndDetails } = require('../src/utils/details')
 
 describe('Transport', function () {
   describe('PSK', function () {
@@ -55,6 +56,25 @@ describe('Transport', function () {
     it('should create a valid packet and condition', function () {
       const result = Transport.createPacketAndCondition(this.params, 'psk')
       this.validate(result)
+    })
+
+    it('should take additional headers for details', function () {
+      this.params.headers = { header: 'value' }
+      this.params.unsafeHeaders = { unsafeHeader: 'unsafeValue' }
+
+      const result = Transport.createPacketAndCondition(this.params, 'psk')
+      this.validate(result)
+
+      const details = parsePacketAndDetails({
+        packet: result.packet,
+        secret: this.params.secret
+      })
+
+      assert.equal(details.unsafeHeaders['Key-Algorithm'], 'HMAC-SHA-256')
+      assert.match(details.unsafeHeaders['Key-Id'], /^[A-Z0-9a-z_-]+$/)
+      assert.equal(details.unsafeHeaders.unsafeHeader, 'unsafeValue')
+      assert.equal(details.headers['Expires-At'], this.params.expiresAt)
+      assert.equal(details.headers.header, 'value')
     })
 
     it('should generate an id if one isn\'t provided', function () {

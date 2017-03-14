@@ -1,5 +1,6 @@
 'use strict'
 
+const Details = require('../utils/details')
 const Transport = require('./transport')
 const cryptoHelper = require('../utils/crypto')
 const assert = require('assert')
@@ -84,5 +85,8 @@ function listen (plugin, rawParams, callback) {
 module.exports = {
   createPacketAndCondition,
   generateParams,
-  listen
+  listen,
+  parseDetails: Details.parseDetails,
+  createDetails: Details.createDetails,
+  parsePacketAndDetails: Details.parsePacketAndDetails
 }

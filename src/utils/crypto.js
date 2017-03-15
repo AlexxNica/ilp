@@ -1,13 +1,13 @@
 'use strict'
 
 const crypto = require('crypto')
-const stringify = require('canonical-json')
 
 const IPR_RECEIVER_ID_STRING = 'ilp_ipr_receiver_id'
 const PSK_GENERATION_STRING = 'ilp_psk_generation'
 const PSK_CONDITION_STRING = 'ilp_psk_condition'
 const PSK_ENCRYPTION_STRING = 'ilp_key_encryption'
 
+const ENCRYPTION_ALGORITHM = 'aes-256-ctr'
 const RECEIVER_ID_LENGTH = 8
 const SHARED_SECRET_LENGTH = 16
 
@@ -34,17 +34,16 @@ function hmac (key, message) {
   return h.digest()
 }
 
-function hmacJsonForPskCondition (obj, sharedSecret) {
+function hmacPacketForPskCondition (packet, sharedSecret) {
   const pskConditionKey = hmac(sharedSecret, PSK_CONDITION_STRING)
-  const jsonString = stringify(obj)
-  const hmacDigest = hmac(pskConditionKey, jsonString)
+  const hmacDigest = hmac(pskConditionKey, Buffer.from(packet, 'base64'))
   return hmacDigest
 }
 
 // turn buffer into encrypted buffer
 function aesEncryptBuffer (sharedSecret, buffer) {
   const pskEncryptionKey = hmac(sharedSecret, PSK_ENCRYPTION_STRING)
-  const cipher = crypto.createCipher('aes-256-ctr', pskEncryptionKey)
+  const cipher = crypto.createCipher(ENCRYPTION_ALGORITHM, pskEncryptionKey)
 
   return Buffer.concat([
     cipher.update(buffer),
@@ -55,7 +54,7 @@ function aesEncryptBuffer (sharedSecret, buffer) {
 // turn buffer into decrypted buffer
 function aesDecryptBuffer (sharedSecret, encrypted) {
   const pskEncryptionKey = hmac(sharedSecret, PSK_ENCRYPTION_STRING)
-  const decipher = crypto.createDecipher('aes-256-ctr', pskEncryptionKey)
+  const decipher = crypto.createDecipher(ENCRYPTION_ALGORITHM, pskEncryptionKey)
 
   return Buffer.concat([
     decipher.update(encrypted),
@@ -64,7 +63,7 @@ function aesDecryptBuffer (sharedSecret, encrypted) {
 }
 
 module.exports = {
-  hmacJsonForPskCondition,
+  hmacPacketForPskCondition,
   aesEncryptBuffer,
   aesDecryptBuffer,
   getPskToken,

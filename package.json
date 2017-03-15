@@ -38,7 +38,6 @@
   "dependencies": {
     "aguid": "^1.0.4",
     "bignumber.js": "^2.4.0",
-    "canonical-json": "0.0.4",
     "debug": "^2.2.0",
     "eventemitter2": "^2.0.0",
     "ilp-core": "^11.0.0",

@@ -57,7 +57,7 @@ function createPacketAndCondition ({
   })
 
   const condition = base64url(cc.toCondition(
-    cryptoHelper.hmacJsonForPskCondition(
+    cryptoHelper.hmacPacketForPskCondition(
       packet,
       secret)))
 
@@ -107,7 +107,7 @@ function * listen (plugin, {
 
     if (err) return err
 
-    const preimage = cryptoHelper.hmacJsonForPskCondition(
+    const preimage = cryptoHelper.hmacPacketForPskCondition(
       Packet.getFromTransfer(transfer),
       secret)
 

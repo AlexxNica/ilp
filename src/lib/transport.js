@@ -41,11 +41,7 @@ function createPacketAndCondition ({
     (id ? ('.' + id) : '')
 
   const details = createDetails({
-    unsafeHeaders: Object.assign({
-      'Key-Id': receiverId, // TODO: is this right?
-      'Key-Algorithm': 'HMAC-SHA-256'
-    }, unsafeHeaders),
-
+    unsafeHeaders: Object.assign({}, unsafeHeaders),
     headers: Object.assign({
       'Expires-At': expiresAt
     }, headers),
@@ -251,7 +247,7 @@ function * _validateOrRejectTransfer ({
     })
   }
 
-  const expiresAt = details.headers['Expires-At']
+  const expiresAt = details.headers['expires-at']
   const amount = new BigNumber(transfer.amount)
 
   if (amount.lessThan(destinationAmount)) {

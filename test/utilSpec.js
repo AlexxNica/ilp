@@ -10,7 +10,10 @@ const Utils = require('../src/utils')
 describe('Utils', function () {
   describe('details', function ()  {
     it('should not parse an invalid request', function () {
-      assert.throws(() => Details._parseRequest(Buffer.from('garbage', 'utf8')),
+      assert.throws(() => Details._parseRequest({
+        request: Buffer.from('garbage', 'utf8'),
+        statusLine: true 
+      }),
         /invalid request:/)
     })
 
@@ -20,30 +23,25 @@ Header: stuff
 
 binary data goes here
       `
-      assert.throws(() => Details._parseRequest(Buffer.from(request, 'utf8')),
+      assert.throws(() => Details._parseRequest({
+        request: Buffer.from(request, 'utf8'),
+        statusLine: true
+      }),
         /invalid status line:/)
     })
 
-    it('should not parse a request with an invalid header line', function () {
-      const request = `PSK/1.0 PRIVATE
-Header without a colon
-
-binary data goes here
-      `
-      assert.throws(() => Details._parseRequest(Buffer.from(request, 'utf8')),
-        /invalid header line:/)
-    })
-
     it('should parse a request', function () {
-      const request = `PSK/1.0 PRIVATE
+      const request = `PSK/1.0
 Header: value
 
 binary data goes here`
 
       assert.deepEqual(
-        Details._parseRequest(Buffer.from(request, 'utf8')),
-        { method: 'PRIVATE',
-          headers: { Header: 'value' },
+        Details._parseRequest({
+          request: Buffer.from(request, 'utf8'),
+          statusLine: true
+        }),
+        { headers: { header: 'value' },
           data: Buffer.from('binary data goes here', 'utf8')
         })
     })
@@ -61,9 +59,14 @@ binary data goes here`
         }))
       })
 
+      const parsed = Details.parsePacketAndDetails({ packet, secret })
       assert.deepEqual(
-        Details.parsePacketAndDetails({ packet, secret }),
-        { unsafeHeaders: { unsafeHeader: 'value' },
+        parsed,
+        { unsafeHeaders: {
+            // the key field isn't deterministic
+            key: parsed.unsafeHeaders.key,
+            unsafeheader: 'value'
+          },
           headers: { header: 'value' },
           data: Buffer.from('binary data', 'utf8'),
           account: 'test.alice',

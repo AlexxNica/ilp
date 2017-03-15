@@ -70,11 +70,13 @@ describe('Transport', function () {
         secret: this.params.secret
       })
 
-      assert.equal(details.unsafeHeaders['Key-Algorithm'], 'HMAC-SHA-256')
-      assert.match(details.unsafeHeaders['Key-Id'], /^[A-Z0-9a-z_-]+$/)
-      assert.equal(details.unsafeHeaders.unsafeHeader, 'unsafeValue')
-      assert.equal(details.headers['Expires-At'], this.params.expiresAt)
-      assert.equal(details.headers.header, 'value')
+      assert.match(details.unsafeHeaders['key-id'], /^[A-Z0-9a-z_-]+$/)
+      assert.equal(details.unsafeHeaders['unsafeheader'], 'unsafeValue')
+      assert.equal(details.headers['expires-at'], this.params.expiresAt)
+      assert.equal(details.headers['header'], 'value')
+      assert.match(details.unsafeHeaders['key'],
+        /hmac\-sha\-256 [A-Z0-9a-z_-]+/,
+        'must pass in Key-Id header')
     })
 
     it('should generate an id if one isn\'t provided', function () {
@@ -365,11 +367,11 @@ describe('Transport', function () {
       this.callback = (details) => {
         assert.isObject(details.transfer, 'must pass in transfer')
         assert.isObject(details.headers, 'must pass in headers')
-        assert.isString(details.headers['Expires-At'], 'must pass in Expires-At header')
+        assert.isString(details.headers['expires-at'], 'must pass in Expires-At header')
         assert.isObject(details.unsafeHeaders, 'must pass in unsafeHeaders')
-        assert.isString(details.unsafeHeaders['Key-Id'], 'must pass in Key-Id header')
-        assert.equal(details.unsafeHeaders['Key-Algorithm'], 'HMAC-SHA-256',
-          'must pass in Key-Algorithm header')
+        assert.match(details.unsafeHeaders['key'],
+          /hmac\-sha\-256 [A-Z0-9a-z_-]+/,
+          'must pass in Key-Id header')
         assert.isObject(JSON.parse(details.data), 'must pass in decrypted data')
         assert.isString(details.destinationAccount, 'must pass in account')
         assert.isString(details.destinationAmount, 'must pass in amount')

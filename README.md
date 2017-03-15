@@ -44,26 +44,25 @@ provides a high-level interface:
 ```js
 'use strict'
 
-const co = require('co')
-const SPSP = require('ilp').SPSP
-const FiveBellsLedgerPlugin = require('ilp-plugin-bells')
+import { SPSP } from 'ilp'
+import FiveBellsLedgerPlugin from 'ilp-plugin-bells'
 
 const plugin = new FiveBellsLedgerPlugin({
   account: 'https://red.ilpdemo.org/ledger/accounts/alice',
   password: 'alice'
 })
 
-co(function * () {
-  const payment = yield SPSP.quote(plugin, {
+(async function () {
+  const payment = await SPSP.quote(plugin, {
     receiver: 'bob@blue.ilpdemo.org'
     sourceAmount: '1',
   })
 
   console.log('got SPSP payment details:', payment)
 
-  const { fulfillment } = yield SPSP.sendPayment(plugin, payment)
-  console.log('sent! fulfillment:', fulfillment)
-})
+  await SPSP.sendPayment(plugin, payment)
+  console.log('receiver claimed funds!')
+})()
 ```
 
 ## [Interledger Payment Request (IPR) Transport Protocol](https://github.com/interledger/rfcs/blob/master/0011-interledger-payment-request/0011-interledger-payment-request.md)
@@ -77,10 +76,9 @@ This library handles the generation of payment requests, but **not the communica
 ```js
 'use strict'
 
-const uuid = require('uuid')
-const co = require('co')
-const ILP = require('ilp')
-const FiveBellsLedgerPlugin = require('ilp-plugin-bells')
+import 'uuid'
+import ILP from 'ilp'
+import FiveBellsLedgerPlugin from 'ilp-plugin-bells'
 
 const sender = new FiveBellsLedgerPlugin({
   account: 'https://red.ilpdemo.org/ledger/accounts/alice',
@@ -92,14 +90,14 @@ const receiver = new FiveBellsLedgerPlugin({
   password: 'bobbob'
 })
 
-co(function * () {
-  const stopListening = yield ILP.IPR.listen(receiver, {
+(async function () {
+  const stopListening = await ILP.IPR.listen(receiver, {
     secret: Buffer.from('secret', 'utf8')
-  }, (params) => {
-    console.log('got transfer:', params.transfer)
+  }, ({ transfer, fulfill }) => {
+    console.log('got transfer:', transfer)
 
     console.log('fulfilling.')
-    return params.fulfill()
+    return fulfill()
   })
 
   const { packet, condition } = ILP.IPR.createPacketAndCondition({
@@ -111,10 +109,10 @@ co(function * () {
   // Note the user of this module must implement the method for
   // communicating packet and condition from the recipient to the sender
 
-  const quote = yield ILP.ILQP.quoteByPacket(sender, packet)
+  const quote = await ILP.ILQP.quoteByPacket(sender, packet)
   console.log('got quote:', quote)
 
-  yield sender.sendTransfer({
+  await sender.sendTransfer({
     id: uuid(),
     to: quote.connectorAccount,
     amount: quote.sourceAmount,
@@ -127,9 +125,7 @@ co(function * () {
     console.log(transfer.id, 'was fulfilled with', fulfillment)
     stopListening()
   })
-}).catch((err) => {
-  console.log(err)
-})
+})()
 ```
 
 ### Pre-Shared Key (PSK) Transport Protocol
@@ -159,10 +155,9 @@ from getting unwanted funds.
 ```js
 'use strict'
 
-const uuid = require('uuid')
-const co = require('co')
-const ILP = require('ilp')
-const FiveBellsLedgerPlugin = require('ilp-plugin-bells')
+import 'uuid'
+import ILP from 'ilp'
+import FiveBellsLedgerPlugin from 'ilp-plugin-bells'
 
 const sender = new FiveBellsLedgerPlugin({
   account: 'https://red.ilpdemo.org/ledger/accounts/alice',
@@ -180,8 +175,8 @@ const { sharedSecret, destinationAccount } = ILP.PSK.generateParams(receiver,
 // communicating sharedSecret and destinationAccount from the recipient
 // to the sender
 
-co(function * () {
-  const stopListening = yield ILP.PSK.listen(receiver, { sharedSecret }, (params) => {
+(async function () {
+  const stopListening = await ILP.PSK.listen(receiver, { sharedSecret }, (params) => {
     console.log('got transfer:', params.transfer)
 
     console.log('fulfilling.')
@@ -196,10 +191,10 @@ co(function * () {
     destinationAmount: '10',
   })
 
-  const quote = yield ILP.ILQP.quoteByPacket(sender, packet)
+  const quote = await ILP.ILQP.quoteByPacket(sender, packet)
   console.log('got quote:', quote)
 
-  yield sender.sendTransfer({
+  await sender.sendTransfer({
     id: uuid(),
     to: quote.connectorAccount,
     amount: quote.sourceAmount,
@@ -212,9 +207,7 @@ co(function * () {
     console.log(transfer.id, 'was fulfilled with', fulfillment)
     stopListening()
   })
-}).catch((err) => {
-  console.log(err)
-})
+})()
 ```
 
 ## API Reference

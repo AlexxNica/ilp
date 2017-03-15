@@ -24,6 +24,10 @@ function getPskSharedSecret (hmacKey, token) {
   return hmac(generator, token).slice(0, SHARED_SECRET_LENGTH)
 }
 
+function getPaymentKey (hmacKey, token) {
+  return hmac(hmacKey, token)
+}
+
 function hmac (key, message) {
   const h = crypto.createHmac('sha256', key)
   h.update(message, 'utf8')
@@ -64,6 +68,7 @@ module.exports = {
   aesEncryptBuffer,
   aesDecryptBuffer,
   getPskToken,
+  getPaymentKey,
   getReceiverId,
   getPskSharedSecret
 }

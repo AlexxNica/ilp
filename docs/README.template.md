@@ -93,11 +93,12 @@ const receiver = new FiveBellsLedgerPlugin({
 (async function () {
   const stopListening = await ILP.IPR.listen(receiver, {
     secret: Buffer.from('secret', 'utf8')
-  }, ({ transfer, fulfill }) => {
+  }, async function ({ transfer, fulfill }) {
     console.log('got transfer:', transfer)
 
-    console.log('fulfilling.')
-    return fulfill()
+    console.log('claiming incoming funds...')
+    await fulfill()
+    console.log('funds received!')
   })
 
   const { packet, condition } = ILP.IPR.createPacketAndCondition({

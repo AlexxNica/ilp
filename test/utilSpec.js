@@ -17,6 +17,31 @@ describe('Utils', function () {
         /invalid request:/)
     })
 
+    it('should not allow Key to be set manually', function () {
+      assert.throws(() => Details.createDetails({
+        unsafeHeaders: { Key: 'my custom key' }
+      }),
+        /Key header may not be set manually:/)
+    })
+
+    it('should encrypt 64 kilobytes of data', function () {
+      const len = 64000
+      const secret = Buffer.from('secret')
+      const details = Details.createDetails({
+        unsafeHeaders: {},
+        headers: {},
+        data: Buffer.from('0'.repeat(len)),
+        secret
+      })
+      
+      const { data } = Details.parseDetails({
+        details,
+        secret
+      })
+
+      assert.equal(data.length, len)
+    })
+
     it('should not parse a request with an invalid status line', function () {
       const request = `PSK/1.0 GARBAGE
 Header: stuff

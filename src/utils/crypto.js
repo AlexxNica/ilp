@@ -42,7 +42,7 @@ function hmacJsonForPskCondition (obj, sharedSecret) {
 }
 
 // turn buffer into encrypted buffer
-function aesEncryptBuffer (buffer, sharedSecret) {
+function aesEncryptBuffer (sharedSecret, buffer) {
   const pskEncryptionKey = hmac(sharedSecret, PSK_ENCRYPTION_STRING)
   const cipher = crypto.createCipher('aes-256-ctr', pskEncryptionKey)
 
@@ -53,7 +53,7 @@ function aesEncryptBuffer (buffer, sharedSecret) {
 }
 
 // turn buffer into decrypted buffer
-function aesDecryptBuffer (encrypted, sharedSecret) {
+function aesDecryptBuffer (sharedSecret, encrypted) {
   const pskEncryptionKey = hmac(sharedSecret, PSK_ENCRYPTION_STRING)
   const decipher = crypto.createDecipher('aes-256-ctr', pskEncryptionKey)
 

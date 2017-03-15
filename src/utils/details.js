@@ -38,6 +38,13 @@ function createDetails ({
   secret,
   data
 }) {
+  if (Object.keys(unsafeHeaders)
+    .map(header => header.toLowerCase())
+    .indexOf('key') >= 0) {
+    throw new Error('Key header may not be set manually:' +
+      JSON.stringify(unsafeHeaders))
+  }
+
   const token = cryptoHelper.getPskToken()
   const paymentKey = cryptoHelper.getPaymentKey(secret, token)
 
@@ -47,7 +54,7 @@ function createDetails ({
     data
   })
 
-  const encrypted = cryptoHelper.aesEncryptBuffer(privateRequest, paymentKey)
+  const encrypted = cryptoHelper.aesEncryptBuffer(paymentKey, privateRequest)
   const publicRequest = _createRequest({
     statusLine: true,
     headers: Object.assign({
@@ -95,7 +102,7 @@ function parseDetails ({
     statusLine: true
   })
 
-  const [ , token ] = publicRequest.headers['key'].match(KEY_HEADER_REGEX)
+  const [ , token ] = publicRequest.headers['key'].match(KEY_HEADER_REGEX) || []
   if (!token) {
     throw new Error('invalid Key header in',
       JSON.stringify(publicRequest.headers))
@@ -105,7 +112,7 @@ function parseDetails ({
     secret,
     Buffer.from(token, 'base64'))
 
-  const decrypted = cryptoHelper.aesDecryptBuffer(publicRequest.data, paymentKey)
+  const decrypted = cryptoHelper.aesDecryptBuffer(paymentKey, publicRequest.data)
   const privateRequest = _parseRequest({
     request: decrypted,
     statusLine: false

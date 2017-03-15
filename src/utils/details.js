@@ -144,5 +144,6 @@ module.exports = {
   _parseRequest,
   createDetails,
   parseDetails,
-  parsePacketAndDetails
+  parsePacketAndDetails,
+  KEY_HEADER_REGEX
 }

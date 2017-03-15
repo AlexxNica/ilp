@@ -10,7 +10,7 @@ const Transport = require('./transport')
   * Create a payment request for use in the IPR transport protocol.
   *
   * @param {Object} params Parameters for creating payment request
-  * @param {String} params.destinationAmount Amount that should arrive in the recipient's account
+  * @param {String} params.destinationAmount Amount that should arrive in the recipient's account. This value is a string representation of an integer, expressed in the lowest indivisible unit supported by the ledger.
   * @param {String} params.destinationAccount Target account's ILP address
   * @param {String} params.secret Secret for generating IPR packets
   * @param {String} [params.id=uuid.v4()] Unique ID for the request (used to ensure conditions are unique per request)

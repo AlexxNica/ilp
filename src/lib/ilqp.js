@@ -113,8 +113,8 @@ function _getCheaperQuote (quote1, quote2) {
   * @param {Object} query
   * @param {String} query.sourceAddress Sender's address
   * @param {String} query.destinationAddress Recipient's address
-  * @param {String} [query.sourceAmount] Either the sourceAmount or destinationAmount must be specified
-  * @param {String} [query.destinationAmount] Either the sourceAmount or destinationAmount must be specified
+  * @param {String} [query.sourceAmount] Either the sourceAmount or destinationAmount must be specified. This value is a string representation of an integer, expressed in the lowest indivisible unit supported by the ledger.
+  * @param {String} [query.destinationAmount] Either the sourceAmount or destinationAmount must be specified. This value is a string representation of an integer, expressed in the lowest indivisible unit supported by the ledger.
   * @param {String|Number} [query.sourceExpiryDuration] Number of seconds between when the source transfer is proposed and when it expires.
   * @param {String|Number} [query.destinationExpiryDuration] Number of seconds between when the destination transfer is proposed and when it expires.
   * @param {Array} [query.connectors] List of ILP addresses of connectors to use for this quote.

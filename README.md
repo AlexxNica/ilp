@@ -96,7 +96,7 @@ const receiver = new FiveBellsLedgerPlugin({
   }, async function ({ transfer, fulfill }) {
     console.log('got transfer:', transfer)
 
-    console.log('claiming incoming funds.')
+    console.log('claiming incoming funds...')
     await fulfill()
     console.log('funds received!')
   })
@@ -212,6 +212,50 @@ const { sharedSecret, destinationAccount } = ILP.PSK.generateParams(receiver,
 ```
 
 ## API Reference
+
+<a name="module_SPSP..query"></a>
+
+### SPSP~query ⇒ <code>Promise.&lt;Object&gt;</code>
+Query an SPSP endpoint and get SPSP details
+
+**Kind**: inner constant of <code>[SPSP](#module_SPSP)</code>  
+**Returns**: <code>Promise.&lt;Object&gt;</code> - SPSP SPSP response from server  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| receiver | <code>String</code> | webfinger account identifier (eg. 'alice@example.com') or URL to SPSP endpoint. |
+
+<a name="module_SPSP..quote"></a>
+
+### SPSP~quote(plugin, params) ⇒ <code>Promise.&lt;SpspPayment&gt;</code>
+Quote to an SPSP receiver
+
+**Kind**: inner method of <code>[SPSP](#module_SPSP)</code>  
+**Returns**: <code>Promise.&lt;SpspPayment&gt;</code> - SPSP payment object to be sent.  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| plugin | <code>Object</code> |  | Ledger plugin used for quoting. |
+| params | <code>Object</code> |  | Quote parameters |
+| params.receiver | <code>String</code> |  | webfinger account identifier (eg. 'alice@example.com') or URL to SPSP endpoint. |
+| [params.sourceAmount] | <code>String</code> |  | source amount to quote. This is a decimal, NOT an integer. It will be shifted by the sending ledger's scale to get the integer amount. |
+| [params.destinationAmount] | <code>String</code> |  | destination amount to quote. This is a decimal, NOT an integer. It will be shifted by the receiving ledger's scale to get the integer amount. |
+| [params.connectors] | <code>Array</code> | <code>[]</code> | connectors to quote. These will be supplied by plugin.getInfo if left unspecified. |
+| [params.id] | <code>String</code> | <code>uuid()</code> | id to use for payment. sending a payment with the same id twice will be idempotent. If left unspecified, the id will be generated randomly. |
+| [params.timeout] | <code>Number</code> | <code>5000</code> | how long to wait for a quote response (ms). |
+
+<a name="module_SPSP..sendPayment"></a>
+
+### SPSP~sendPayment(plugin, payment) ⇒ <code>Promise.&lt;Object&gt;</code> &#124; <code>String</code>
+Quote to an SPSP receiver
+
+**Kind**: inner method of <code>[SPSP](#module_SPSP)</code>  
+**Returns**: <code>Promise.&lt;Object&gt;</code> - result The result of the payment.<code>String</code> - result.fulfillment The fulfillment of the payment.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| plugin | <code>Object</code> | Ledger plugin used for quoting. |
+| payment | <code>SpspPayment</code> | SPSP Payment returned from SPSP.quote. |
 
 <a name="module_SPSP..SpspPayment"></a>
 

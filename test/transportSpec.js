@@ -49,7 +49,7 @@ describe('Transport', function () {
         // the data is still encrypted, so we can't check it from just parsing
         assert.isString(data)
         assert.equal(amount, '1')
-        assert.match(account, /^test\.example\.alice\.~(psk|ipr)/)
+        assert.match(account, /^test\.example\.alice\./)
       }
     })
 
@@ -86,7 +86,7 @@ describe('Transport', function () {
 
       const parsed = Packet.parse(result.packet)
       assert.match(parsed.account,
-        /test\.example\.alice\.~psk\..{8}/)
+        /test\.example\.alice\..{8}/)
     })
 
     describe('IPR', function () {
@@ -162,14 +162,11 @@ describe('Transport', function () {
         destinationAccount: 'test.example.alice',
         secret: Buffer.from('shh_its_a_secret', 'base64'),
         data: { foo: 'bar' },
-        id: 'ee39d171-cdd5-4268-9ec8-acc349666055',
         expiresAt: moment().add(1, 'seconds').format(),
       }, 'ipr')
 
       this.packet = packet
       this.params = {
-        protocol: 'ipr',
-        id: 'ee39d171-cdd5-4268-9ec8-acc349666055',
         plugin: this.plugin,
         secret: Buffer.from('shh_its_a_secret', 'base64'),
         transfer: {
@@ -214,20 +211,10 @@ describe('Transport', function () {
         'not-my-packet')
     })
 
-    it('should not accept transfer for other protocol', function * () {
-      this.params.transfer.ilp = Packet.serialize(Object.assign(
-        Packet.parse(this.packet),
-        { account: 'test.example.alice.~ekp' }))
-
-      assert.equal(
-        yield Transport._validateOrRejectTransfer(this.params),
-        'not-my-packet')
-    })
-
     it('should not accept transfer for other receiver', function * () {
       this.params.transfer.ilp = Packet.serialize(Object.assign(
         Packet.parse(this.packet),
-        { account: 'test.example.alice.~ipr.garbage' }))
+        { account: 'test.example.alice.garbage' }))
 
       assert.equal(
         yield Transport._validateOrRejectTransfer(this.params),
@@ -293,12 +280,11 @@ describe('Transport', function () {
     beforeEach(function () {
       const { packet, condition } = Transport.createPacketAndCondition({
         destinationAmount: '1',
-        destinationAccount: 'test.example.alice.~ipr.GbLOVv3YyLo',
+        destinationAccount: 'test.example.alice.GbLOVv3YyLo',
         secret: Buffer.from('shh_its_a_secret', 'base64'),
         data: { foo: 'bar' },
         id: 'ee39d171-cdd5-4268-9ec8-acc349666055',
         expiresAt: moment().add(1, 'seconds').format(),
-        protocol: 'ipr'
       })
 
       this.params = {
@@ -309,7 +295,7 @@ describe('Transport', function () {
       this.transfer = {
         id: 'ee39d171-cdd5-4268-9ec8-acc349666055',
         amount: '1',
-        to: 'test.example.alice.~ipr.GbLOVv3YyLo',
+        to: 'test.example.alice.GbLOVv3YyLo',
         from: 'test.example.connie',
         executionCondition: condition,
         ilp: packet

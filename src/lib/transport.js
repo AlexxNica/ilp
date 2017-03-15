@@ -23,7 +23,6 @@ function _safeDecrypt (data, secret) {
 }
 
 function createPacketAndCondition ({
-  id,
   destinationAmount,
   destinationAccount,
   secret,
@@ -37,8 +36,7 @@ function createPacketAndCondition ({
   assert(Buffer.isBuffer(secret), 'secret must be a buffer')
 
   const receiverId = base64url(cryptoHelper.getReceiverId(secret))
-  const address = destinationAccount + '.~' + protocol + '.' + receiverId +
-    (id ? ('.' + id) : '')
+  const address = destinationAccount + '.' + receiverId
 
   const details = createDetails({
     unsafeHeaders: Object.assign({}, unsafeHeaders),
@@ -222,12 +220,7 @@ function * _validateOrRejectTransfer ({
   }
 
   const localPart = destinationAccount.slice(account.length + 1)
-  const [ addressProtocol, addressReceiverId ] = localPart.split('.')
-
-  if (addressProtocol !== '~' + protocol) {
-    debug('notified of transfer with protocol=' + addressProtocol)
-    return 'not-my-packet'
-  }
+  const [ addressReceiverId ] = localPart.split('.')
 
   if (addressReceiverId !== receiverId) {
     debug('notified of transfer for another receiver: receiver=' +

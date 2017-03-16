@@ -3,7 +3,6 @@
 const Packet = require('../utils/packet')
 const moment = require('moment')
 const cryptoHelper = require('../utils/crypto')
-const cc = require('../utils/condition')
 const co = require('co')
 const debug = require('debug')('ilp:transport')
 const assert = require('assert')

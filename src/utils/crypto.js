@@ -1,6 +1,7 @@
 'use strict'
 
 const crypto = require('crypto')
+const base64url = require('./base64url')
 
 const IPR_RECEIVER_ID_STRING = 'ilp_ipr_receiver_id'
 const PSK_GENERATION_STRING = 'ilp_psk_generation'
@@ -10,9 +11,10 @@ const PSK_ENCRYPTION_STRING = 'ilp_key_encryption'
 const ENCRYPTION_ALGORITHM = 'aes-256-ctr'
 const RECEIVER_ID_LENGTH = 8
 const SHARED_SECRET_LENGTH = 16
+const PSK_TOKEN_LENGTH = 16
 
 function getPskToken () {
-  return crypto.randomBytes(16)
+  return crypto.randomBytes(PSK_TOKEN_LENGTH)
 }
 
 function getReceiverId (hmacKey) {
@@ -22,6 +24,18 @@ function getReceiverId (hmacKey) {
 function getPskSharedSecret (hmacKey, token) {
   const generator = hmac(hmacKey, PSK_GENERATION_STRING)
   return hmac(generator, token).slice(0, SHARED_SECRET_LENGTH)
+}
+
+function generatePskParams (secretSeed) {
+  const token = getPskToken()
+  const sharedSecret = getPskSharedSecret(secretSeed, token)
+  const receiverId = getReceiverId(sharedSecret)
+
+  return {
+    token: base64url(token),
+    receiverId: base64url(receiverId),
+    sharedSecret: base64url(sharedSecret)
+  }
 }
 
 function getPaymentKey (hmacKey, token) {
@@ -34,7 +48,7 @@ function hmac (key, message) {
   return h.digest()
 }
 
-function hmacPacketForPskCondition (packet, sharedSecret) {
+function packetToPreimage (packet, sharedSecret) {
   const pskConditionKey = hmac(sharedSecret, PSK_CONDITION_STRING)
   const hmacDigest = hmac(pskConditionKey, Buffer.from(packet, 'base64'))
   return hmacDigest
@@ -62,8 +76,27 @@ function aesDecryptBuffer (sharedSecret, encrypted) {
   ])
 }
 
+function preimageToCondition (conditionPreimage) {
+  const hash = crypto.createHash('sha256')
+  hash.update(conditionPreimage)
+  const condition = hash.digest()
+  return base64url(condition)
+}
+
+function packetToCondition (secret, packet) {
+  return preimageToCondition(packetToPreimage(packet, secret))
+}
+
+function preimageToFulfillment (conditionPreimage) {
+  return base64url(conditionPreimage)
+}
+
 module.exports = {
-  hmacPacketForPskCondition,
+  packetToPreimage,
+  packetToCondition,
+  generatePskParams,
+  preimageToCondition,
+  preimageToFulfillment,
   aesEncryptBuffer,
   aesDecryptBuffer,
   getPskToken,

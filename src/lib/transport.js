@@ -54,10 +54,7 @@ function createPacketAndCondition ({
     data: details
   })
 
-  const condition = base64url(cc.toCondition(
-    cryptoHelper.hmacPacketForPskCondition(
-      packet,
-      secret)))
+  const condition = cryptoHelper.packetToCondition(secret, packet)
 
   return {
     packet,
@@ -105,15 +102,15 @@ function * listen (plugin, {
 
     if (err) return err
 
-    const preimage = cryptoHelper.hmacPacketForPskCondition(
+    const preimage = cryptoHelper.packetToPreimage(
       Packet.getFromTransfer(transfer),
       secret)
 
-    if (transfer.executionCondition !== cc.toCondition(preimage)) {
+    if (transfer.executionCondition !== cryptoHelper.preimageToCondition(preimage)) {
       debug('notified of transfer where executionCondition does not' +
         ' match the one we generate.' +
         ' executionCondition=' + transfer.executionCondition +
-        ' our condition=' + cc.toCondition(preimage))
+        ' our condition=' + cryptoHelper.preimageToCondition(preimage))
       return yield _reject(plugin, transfer.id, {
         code: 'S05',
         name: 'Wrong Condition',
@@ -134,7 +131,7 @@ function * listen (plugin, {
     const destinationAccount = parsed.account
     const data = parsed.data
     const details = _safeDecrypt(data, secret)
-    const fulfillment = cc.toFulfillment(preimage)
+    const fulfillment = cryptoHelper.preimageToFulfillment(preimage)
 
     try {
       yield Promise.resolve(callback({

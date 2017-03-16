@@ -46,11 +46,8 @@ function generateParams ({
   assert(typeof destinationAccount === 'string', 'destinationAccount must be a string')
   assert(Buffer.isBuffer(secretSeed), 'secretSeed must be a buffer')
 
-  const token = base64url(cryptoHelper.getPskToken(secretSeed))
-  const sharedSecret =
-    base64url(cryptoHelper.getPskSharedSecret(secretSeed, token))
-
-  const receiverId = base64url(cryptoHelper.getReceiverId(sharedSecret))
+  const { token, sharedSecret, receiverId } =
+    cryptoHelper.generatePskParams(secretSeed)
 
   return {
     sharedSecret,
